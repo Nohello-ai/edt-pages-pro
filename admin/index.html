@@ -10451,6 +10451,239 @@ label,
 			}
 			.subscription-link-wrapper .btn-container .btn { width: 100%; }
 		}
+
+		/* Energy operations v3 */
+		:root {
+			--energy-black: #070808;
+			--energy-panel: #111313;
+			--energy-panel-raised: #181a1a;
+			--energy-line: #303332;
+			--energy-gold: #d6a729;
+			--energy-red: #bd1831;
+			--energy-silver: #d9dbd7;
+		}
+
+		html,
+		body,
+		.page-wrapper,
+		.card-container {
+			background: var(--energy-black) !important;
+			color: #f3f3ef !important;
+		}
+
+		.page-wrapper::before {
+			content: '';
+			position: fixed;
+			inset: 0 auto 0 0;
+			width: 248px;
+			background: url('../assets/network-core.jpg') 36% center / cover no-repeat;
+			filter: grayscale(.35) brightness(.28) contrast(1.2);
+			pointer-events: none;
+		}
+
+		.ops-sidebar {
+			background: rgba(4, 5, 5, .76) !important;
+			border-right-color: rgba(214, 167, 41, .25) !important;
+			backdrop-filter: blur(10px);
+			-webkit-backdrop-filter: blur(10px);
+		}
+
+		.ops-brand-mark {
+			background: var(--energy-gold) !important;
+			color: #090a0a !important;
+		}
+
+		.ops-brand strong { color: #fff !important; }
+		.ops-brand span:not(.ops-brand-mark),
+		.ops-sidebar-foot { color: rgba(255,255,255,.48) !important; }
+		.ops-brand { border-bottom-color: rgba(255,255,255,.15) !important; }
+
+		.ops-nav-button { color: rgba(255,255,255,.64) !important; }
+		.ops-nav-button:hover { background: rgba(255,255,255,.08) !important; }
+		.ops-nav-button.active {
+			background: var(--energy-gold) !important;
+			color: #090a0a !important;
+			box-shadow: none !important;
+		}
+
+		.card-container {
+			background-image: linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px) !important;
+			background-size: 38px 38px !important;
+		}
+
+		.header {
+			background: rgba(7, 8, 8, .92) !important;
+			border-bottom-color: var(--energy-line) !important;
+			color: #fff !important;
+		}
+
+		.header-title h1 {
+			color: #fff !important;
+			font-size: clamp(25px, 3vw, 42px) !important;
+			font-weight: 800 !important;
+		}
+
+		.header-title h1::before {
+			content: 'EDGE ENERGY / OPERATIONS';
+			color: var(--energy-gold);
+			letter-spacing: .16em !important;
+		}
+
+		.module {
+			border-color: var(--energy-line) !important;
+			background: rgba(17, 19, 19, .94) !important;
+			box-shadow: none !important;
+			color: #f3f3ef !important;
+		}
+
+		.module:hover,
+		.module:focus-within {
+			border-color: rgba(214, 167, 41, .52) !important;
+			box-shadow: 0 16px 48px rgba(0,0,0,.22) !important;
+		}
+
+		.module-title {
+			border-bottom-color: var(--energy-line) !important;
+			color: #fff !important;
+			font-size: 16px !important;
+		}
+
+		.module-title::before {
+			background: var(--energy-gold) !important;
+		}
+
+		.form-group label,
+		.checkbox-label {
+			color: #b5b8b3 !important;
+		}
+
+		.form-group input:not([type="checkbox"]),
+		.form-group select,
+		.form-group textarea,
+		.line-editor {
+			border-color: #3a3d3c !important;
+			background: #0b0d0d !important;
+			color: #f2f2ee !important;
+		}
+
+		.form-group input:not([type="checkbox"]):hover,
+		.form-group select:hover,
+		.form-group textarea:hover {
+			border-color: #5a5e5b !important;
+		}
+
+		.form-group input:focus,
+		.form-group select:focus,
+		.form-group textarea:focus {
+			border-color: var(--energy-gold) !important;
+			box-shadow: 0 0 0 3px rgba(214, 167, 41, .13) !important;
+		}
+
+		.form-group input[readonly] {
+			background: #171919 !important;
+			color: #949893 !important;
+		}
+
+		select option { background: #101212; color: #fff; }
+
+		.btn {
+			border-color: #444745 !important;
+			background: #181a1a !important;
+			color: #e9eae6 !important;
+		}
+
+		.btn:hover:not(:disabled) {
+			border-color: #777b77 !important;
+			background: #222525 !important;
+		}
+
+		.btn-primary,
+		.btn-success,
+		.btn-confirm-api {
+			border-color: var(--energy-gold) !important;
+			background: var(--energy-gold) !important;
+			color: #080909 !important;
+		}
+
+		.btn-primary:hover:not(:disabled),
+		.btn-success:hover:not(:disabled) {
+			border-color: #e6bb42 !important;
+			background: #e6bb42 !important;
+			color: #080909 !important;
+		}
+
+		.btn-danger,
+		.btn-reset {
+			border-color: rgba(189,24,49,.7) !important;
+			background: rgba(189,24,49,.12) !important;
+			color: #ff7184 !important;
+		}
+
+		.btn-mode-toggle {
+			border-color: rgba(214,167,41,.5) !important;
+			background: rgba(214,167,41,.08) !important;
+			color: #e7c45d !important;
+		}
+
+		.network-card,
+		.latency-card,
+		.cf-stats-card,
+		.cf-info-box,
+		.stat {
+			border-color: #303332 !important;
+			background: #0c0e0e !important;
+			color: #f2f2ee !important;
+		}
+
+		.network-card:nth-child(odd) { border-top: 2px solid var(--energy-gold) !important; }
+		.network-card:nth-child(even) { border-top: 2px solid var(--energy-red) !important; }
+		.title-main,
+		.ip-text,
+		.cf-stat-value { color: #fff !important; }
+		.title-subtitle,
+		.network-tip,
+		.location-text,
+		.cf-stat-label { color: #8f938e !important; }
+
+		.cf-progress-bar { border-color: #343736 !important; background: #191b1b !important; }
+		.cf-bar-green { background: var(--energy-gold) !important; }
+		.cf-bar-blue { background: var(--energy-red) !important; }
+
+		.inline-hint-btn {
+			border-color: var(--energy-gold) !important;
+			color: var(--energy-gold) !important;
+			background: transparent !important;
+		}
+
+		input[type="checkbox"] { accent-color: var(--energy-gold); }
+
+		.modal-overlay { background: rgba(0,0,0,.82) !important; }
+		.modal {
+			border-color: #484b49 !important;
+			background: #111313 !important;
+			color: #f2f2ee !important;
+			box-shadow: 0 30px 100px rgba(0,0,0,.6) !important;
+		}
+
+		.success-message { background: #d6a729 !important; color: #090a0a !important; }
+		.error-message { background: #bd1831 !important; color: #fff !important; }
+
+		@media (max-width: 900px) {
+			.page-wrapper::before { display: none; }
+			.card-container {
+				background-color: var(--energy-black) !important;
+				background-image: linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px) !important;
+			}
+			.ops-mobile-nav {
+				border-color: rgba(214,167,41,.3) !important;
+				background: rgba(7,8,8,.96) !important;
+			}
+			.ops-mobile-nav .ops-nav-button.active {
+				background: var(--energy-gold) !important;
+				color: #080909 !important;
+				box-shadow: none !important;
+			}
+		}
 	</style>
 
 </head>
