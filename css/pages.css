@@ -1,4 +1,6 @@
-/* standalone pages — ivory + glass */
+/* Login inspired by classic admin cards (zyyo-style), password-only.
+   Assets use absolute Pages CDN so Worker-hosted HTML still loads styles. */
+
 .center-page {
   min-height: 100vh;
   display: grid;
@@ -10,7 +12,7 @@
 .center-page.bg-photo {
   background:
     radial-gradient(800px 480px at 20% 0%, rgba(31, 77, 58, 0.12), transparent 55%),
-    #1a1814 url('../assets/network-core.jpg') center / cover fixed no-repeat;
+    #1a1814 url('https://nohello-ai.github.io/edt-pages-pro/assets/network-core.jpg') center / cover fixed no-repeat;
 }
 .center-page.bg-photo::before {
   content: '';
@@ -19,6 +21,129 @@
   background: rgba(28, 24, 18, 0.55);
 }
 
+/* ---- zyyo-like login shell ---- */
+.login-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  position: relative;
+  background:
+    linear-gradient(135deg, rgba(15, 23, 42, 0.45), rgba(15, 23, 42, 0.25)),
+    url('https://nohello-ai.github.io/edt-pages-pro/assets/network-core.jpg') center / cover fixed no-repeat;
+}
+
+.login-card {
+  width: min(420px, 100%);
+  padding: 40px 36px 28px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow:
+    0 0 0 1px rgba(15, 23, 42, 0.04),
+    0 18px 50px rgba(15, 23, 42, 0.22);
+  position: relative;
+  z-index: 1;
+}
+
+.login-card .brand-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+.login-card .brand-mark {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #33cabb, #31b0d5);
+  color: #fff;
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+}
+.login-card h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1f2937;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+.login-card .lead {
+  margin: 0 0 22px;
+  font-size: 13px;
+  color: #6b7280;
+  line-height: 1.55;
+}
+
+.login-field {
+  position: relative;
+  margin-bottom: 16px;
+}
+.login-field .mdi-like {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 40px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  color: #c4c4c4;
+  pointer-events: none;
+  font-size: 16px;
+}
+.login-field input {
+  width: 100%;
+  height: 42px;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  padding: 8px 12px 8px 40px;
+  background: #fff;
+  color: #111827;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.login-field input:focus {
+  border-color: #33cabb;
+  box-shadow: 0 0 0 3px rgba(51, 202, 187, 0.15);
+}
+.login-field input::placeholder { color: #9ca3af; }
+
+.login-submit {
+  width: 100%;
+  height: 42px;
+  border: 0;
+  border-radius: 4px;
+  background: linear-gradient(135deg, #33cabb, #31b0d5);
+  color: #fff;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: filter 0.15s ease, transform 0.05s ease;
+}
+.login-submit:hover { filter: brightness(1.04); }
+.login-submit:active { transform: translateY(1px); }
+.login-submit:disabled { opacity: 0.65; cursor: not-allowed; }
+
+.login-error {
+  min-height: 1.25em;
+  margin-top: 12px;
+  font-size: 13px;
+  color: #dc2626;
+  text-align: center;
+}
+.login-foot {
+  margin-top: 18px;
+  text-align: center;
+  font-size: 12px;
+  color: #9ca3af;
+}
+.login-foot a { color: #31b0d5; text-decoration: none; }
+.login-foot a:hover { text-decoration: underline; }
+
+/* error pages glass cards (ivory) */
 .glass-card {
   position: relative;
   z-index: 1;
@@ -26,24 +151,19 @@
   padding: 28px 24px 22px;
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.45);
-  background: rgba(255, 252, 247, 0.72);
+  background: rgba(255, 252, 247, 0.88);
   box-shadow: 0 24px 80px rgba(20, 16, 10, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  color: var(--text);
+  color: var(--text, #1c1a16);
 }
-
-.center-page.bg-photo .glass-card {
-  background: rgba(255, 252, 247, 0.88);
-}
-
 .glass-card .icon {
   width: 48px;
   height: 48px;
   border-radius: 14px;
   display: grid;
   place-items: center;
-  background: var(--accent);
+  background: #1f4d3a;
   color: #f7f4ed;
   font-weight: 800;
   margin-bottom: 14px;
@@ -52,41 +172,11 @@
   background: linear-gradient(135deg, #8b1e3f, #b42318);
   color: #fff;
 }
-.glass-card h1 {
-  font-size: 22px;
-  margin-bottom: 8px;
-  letter-spacing: -0.02em;
-}
-.glass-card .lead {
-  color: var(--text-dim);
-  font-size: 14px;
-  margin-bottom: 18px;
-}
-.glass-card .foot {
-  margin-top: 18px;
-  font-size: 12px;
-  color: var(--text-mute);
-  text-align: center;
-}
+.glass-card h1 { font-size: 22px; margin-bottom: 8px; letter-spacing: -0.02em; }
+.glass-card .lead { color: #5c574e; font-size: 14px; margin-bottom: 18px; }
+.glass-card .foot { margin-top: 18px; font-size: 12px; color: #8a8478; text-align: center; }
 
-.login-bg-frame {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
-  filter: blur(10px) saturate(0.95);
-  transform: scale(1.04);
-  pointer-events: none;
-  opacity: 0.45;
-}
-.login-dim {
-  position: fixed;
-  inset: 0;
-  background: rgba(244, 241, 234, 0.35);
-}
-
-/* camouflage keeps soft pink glass */
+/* camouflage */
 .meow-page {
   min-height: 100vh;
   display: grid;
