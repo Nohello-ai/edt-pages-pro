@@ -18,7 +18,7 @@ edgetunnel-v3 配套 **静态前端**（GitHub Pages / 任意静态托管）。
 
 | 路径 | 说明 |
 |------|------|
-| `index.html` | 伪装页（喵站） |
+| `index.html` | 伪装页（贪吃蛇小游戏） |
 | `login/` | 登录 |
 | `admin/` | 管理台 SPA 壳 + 模块化功能 |
 | `noADMIN/` | 未设 ADMIN 提示 |

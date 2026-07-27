@@ -2,34 +2,53 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <title>喵呜小站</title>
+  <title>贪吃蛇 · EdgeTunnel</title>
   <link rel="stylesheet" href="https://nohello-ai.github.io/edt-pages-pro/css/base.css">
   <link rel="stylesheet" href="https://nohello-ai.github.io/edt-pages-pro/css/pages.css">
 </head>
 <body>
-  <div class="meow-page">
-    <div class="meow-card">
-      <button type="button" class="cat-btn" id="cat" title="戳戳小猫" aria-label="摸摸小猫">🐱</button>
-      <div class="muted" id="meowBubble" style="min-height:1.4em;color:#ff5d8f;font-weight:600">喵~</div>
-      <h1>喵呜小站上线啦</h1>
-      <p class="sub">今天也是元气满满的一天～ 点一点小猫加好运 ✨</p>
-      <div class="meow-stats">
-        <div class="meow-stat">
-          <div class="k">今日点击</div>
-          <div class="v" id="todayClicks">0</div>
-          <div class="k" id="dateLabel">—</div>
+  <div class="snake-page">
+    <div class="snake-card">
+      <div class="snake-head">
+        <div>
+          <div class="eyebrow">Camouflage</div>
+          <h1>贪吃蛇</h1>
+          <p class="sub">方向键 / WASD · 空格开始/暂停 · 手机可滑动或点方向键</p>
         </div>
-        <div class="meow-stat">
-          <div class="k">摸摸次数</div>
-          <div class="v" id="petCount">0</div>
-          <div class="k">累计撸猫</div>
+        <div class="snake-scores">
+          <div class="score-box">
+            <div class="k">得分</div>
+            <div class="v" id="score">0</div>
+          </div>
+          <div class="score-box">
+            <div class="k">最高</div>
+            <div class="v" id="best">0</div>
+          </div>
         </div>
       </div>
-      <p class="meow-tip">今日点击按天重置，数据仅存在本机浏览器。</p>
+
+      <canvas id="board" width="400" height="400" aria-label="贪吃蛇棋盘"></canvas>
+
+      <div class="snake-bar">
+        <span id="status" class="status">按空格或点开始</span>
+        <div class="snake-actions">
+          <button type="button" class="btn" id="btnPause">暂停</button>
+          <button type="button" class="btn btn-primary" id="btnStart">开始</button>
+        </div>
+      </div>
+
+      <div class="dpad" aria-label="方向键">
+        <button type="button" data-dir="up" aria-label="上">↑</button>
+        <div class="dpad-mid">
+          <button type="button" data-dir="left" aria-label="左">←</button>
+          <button type="button" data-dir="down" aria-label="下">↓</button>
+          <button type="button" data-dir="right" aria-label="右">→</button>
+        </div>
+      </div>
     </div>
   </div>
-  <script type="module" src="https://nohello-ai.github.io/edt-pages-pro/js/camouflage.js"></script>
+  <script type="module" src="https://nohello-ai.github.io/edt-pages-pro/js/snake.js"></script>
 </body>
 </html>
