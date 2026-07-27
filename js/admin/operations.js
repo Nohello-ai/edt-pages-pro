@@ -21,10 +21,6 @@ export function renderOperations(root) {
   const logs = (getState().logs || []).slice().reverse().slice(0, 50);
 
   root.innerHTML = `
-    <div class="section-head">
-      <h2>系统运维</h2>
-      <p>通知、Cloudflare 凭据、操作日志与危险操作</p>
-    </div>
     <div class="panel">
       <h3>Telegram 通知</h3>
       <div class="grid-2">

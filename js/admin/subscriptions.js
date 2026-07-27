@@ -25,8 +25,8 @@ export function renderSubscriptions(root) {
 
   root.innerHTML = `
     <div class="section-head">
-      <h2>节点订阅</h2>
-      <p>复制节点链接与各客户端订阅地址（鉴权 token 来自 Worker 配置）</p>
+      <h2>订阅链接提取</h2>
+      <p>登录后默认进入此页 · 复制节点与各客户端订阅地址</p>
     </div>
     <div class="panel">
       <h3>节点链接</h3>
@@ -34,7 +34,7 @@ export function renderSubscriptions(root) {
         <input id="linkNode" readonly value="${escapeAttr(links.node)}">
         <button class="btn btn-primary btn-sm" data-copy="linkNode">复制</button>
       </div>
-      <p class="muted" style="margin-top:8px;font-size:12px">协议 / 路径 / UUID 变更后请先在「高级配置」保存，再回到此处复制。</p>
+      <p class="muted" style="margin-top:8px;font-size:12px">协议 / 路径变更后请打开「高级设置」保存，再回来复制。</p>
     </div>
     <div class="panel">
       <h3>客户端订阅</h3>
