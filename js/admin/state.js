@@ -4,7 +4,8 @@
 const state = {
   config: null,
   dirty: false,
-  view: 'overview',
+  view: 'subscriptions',
+  advancedOpen: false,
   logs: [],
   addText: '',
   loading: false,
