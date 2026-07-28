@@ -1,54 +1,31 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="robots" content="noindex, nofollow">
-  <title>贪吃蛇 · EdgeTunnel</title>
-  <link rel="stylesheet" href="https://nohello-ai.github.io/edt-pages-pro/css/base.css">
-  <link rel="stylesheet" href="https://nohello-ai.github.io/edt-pages-pro/css/pages.css">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Welcome to nginx!</title>
+	<style>
+		body {
+			width: 35em;
+			margin: 0 auto;
+			font-family: Tahoma, Verdana, Arial, sans-serif;
+		}
+	</style>
 </head>
+
 <body>
-  <div class="snake-page">
-    <div class="snake-card">
-      <div class="snake-head">
-        <div>
-          <div class="eyebrow">Camouflage</div>
-          <h1>贪吃蛇</h1>
-          <p class="sub">方向键 / WASD · 空格开始/暂停 · 手机可滑动或点方向键</p>
-        </div>
-        <div class="snake-scores">
-          <div class="score-box">
-            <div class="k">得分</div>
-            <div class="v" id="score">0</div>
-          </div>
-          <div class="score-box">
-            <div class="k">最高</div>
-            <div class="v" id="best">0</div>
-          </div>
-        </div>
-      </div>
+	<h1>Welcome to nginx!</h1>
+	<p>If you see this page, the nginx web server is successfully installed and
+		working. Further configuration is required.</p>
 
-      <canvas id="board" width="400" height="400" aria-label="贪吃蛇棋盘"></canvas>
+	<p>For online documentation and support please refer to
+		<a href="http://nginx.org/">nginx.org</a>.<br />
+		Commercial support is available at
+		<a href="http://nginx.com/">nginx.com</a>.
+	</p>
 
-      <div class="snake-bar">
-        <span id="status" class="status">按空格或点开始</span>
-        <div class="snake-actions">
-          <button type="button" class="btn" id="btnPause">暂停</button>
-          <button type="button" class="btn btn-primary" id="btnStart">开始</button>
-        </div>
-      </div>
-
-      <div class="dpad" aria-label="方向键">
-        <button type="button" data-dir="up" aria-label="上">↑</button>
-        <div class="dpad-mid">
-          <button type="button" data-dir="left" aria-label="左">←</button>
-          <button type="button" data-dir="down" aria-label="下">↓</button>
-          <button type="button" data-dir="right" aria-label="右">→</button>
-        </div>
-      </div>
-    </div>
-  </div>
-  <script type="module" src="https://nohello-ai.github.io/edt-pages-pro/js/snake.js"></script>
+	<p><em>Thank you for using nginx.</em></p>
 </body>
+
 </html>
