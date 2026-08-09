@@ -25,7 +25,7 @@ jobs:
             gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu \
             crossbuild-essential-arm64 libelf-dev dwarves ccache
 
-      # ---------- 源码缓存 ----------
+      # ---------- 源码缓存（固定版本只存一次，不更新）----------
       - name: Cache kernel source
         uses: actions/cache@v4
         with:
@@ -34,15 +34,14 @@ jobs:
           restore-keys: |
             kernel-src-${{ github.event.inputs.kernel_version }}
 
-      # ---------- ccache 缓存 ----------
-      - name: Cache ccache
-        uses: actions/cache@v4
+      # ---------- ccache 缓存（每次编译后更新）----------
+      - name: Restore ccache
+        uses: actions/cache/restore@v4
         with:
           path: ~/.ccache
-          key: ccache-droidvm-${{ github.event.inputs.kernel_version }}
+          key: ccache-droidvm-${{ github.event.inputs.kernel_version }}-${{ github.run_number }}
           restore-keys: |
-            ccache-droidvm-
-          save-always: true
+            ccache-droidvm-${{ github.event.inputs.kernel_version }}-
 
       # ---------- 下载源码 ----------
       - name: Download kernel source
@@ -106,6 +105,13 @@ jobs:
 
       - name: Show ccache stats
         run: ccache -s
+
+      # ---------- 保存 ccache（每次编译后都存新的）----------
+      - name: Save ccache
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.ccache
+          key: ccache-droidvm-${{ github.event.inputs.kernel_version }}-${{ github.run_number }}
 
       # ---------- 打包 ----------
       - name: Package artifacts
