@@ -88,10 +88,10 @@ jobs:
 
           echo "=== Key config check ==="
           grep "^CONFIG_VIRTIO_CONSOLE=y" .config && echo "[OK] VIRTIO_CONSOLE" || echo "[FAIL] VIRTIO_CONSOLE"
-          grep "^CONFIG_VIRTIO_NET_MQ=y" .config && echo "[OK] VIRTIO_NET_MQ" || echo "[FAIL] VIRTIO_NET_MQ"
+          grep "^CONFIG_VIRTIO_NET=y" .config && echo "[OK] VIRTIO_NET" || echo "[FAIL] VIRTIO_NET"
+          grep "^CONFIG_DEFAULT_BBR=y" .config && echo "[OK] DEFAULT_BBR" || echo "[FAIL] DEFAULT_BBR"
           grep "^CONFIG_IO_URING=y" .config && echo "[OK] IO_URING" || echo "[FAIL] IO_URING"
           grep "^CONFIG_TCP_CONG_BBR=y" .config && echo "[OK] BBR" || echo "[FAIL] BBR"
-          grep '^CONFIG_DEFAULT_TCP_CONG="bbr"' .config && echo "[OK] DEFAULT_BBR" || echo "[FAIL] DEFAULT_BBR"
 
       # ---------- 编译内核 ----------
       - name: Build kernel
