@@ -11,10 +11,6 @@ on:
         description: 'Release title (optional)'
         required: false
         default: ''
-      config_file:
-        description: 'Path to config options file in the repo (e.g., kernel-config.txt)'
-        required: false
-        default: 'kernel-config.txt'
 
 jobs:
   build:
@@ -60,12 +56,12 @@ jobs:
           echo "KERNEL_VERSION=${KERNEL_VERSION}" >> $GITHUB_ENV
           echo "RELEASE_TAG=kernel-${KERNEL_VERSION}" >> $GITHUB_ENV
 
-      - name: Configure kernel using provided config file
+      - name: Configure kernel
         run: |
           cd linux-${KERNEL_VERSION}
           make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- defconfig
 
-          CONFIG_FILE="../${{ github.event.inputs.config_file }}"
+          CONFIG_FILE="../kernel-config.txt"
           if [ -f "$CONFIG_FILE" ]; then
             echo "Applying custom config options from $CONFIG_FILE"
             while IFS= read -r line; do
@@ -85,42 +81,27 @@ jobs:
               fi
             done < "$CONFIG_FILE"
           else
-            echo "Warning: Config file $CONFIG_FILE not found. Using defconfig only."
+            echo "Warning: kernel-config.txt not found. Using defconfig only."
           fi
 
           make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- olddefconfig
 
-      - name: Build kernel and modules (with ccache)
+      - name: Build kernel with ccache
         run: |
           export PATH=/usr/lib/ccache:$PATH
           ccache -M 5G
           cd linux-${KERNEL_VERSION}
           make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(nproc)
-          mkdir -p ../kernel-artifacts
+          mkdir -p ../artifacts
 
-      - name: Install modules to temporary directory
-        run: |
-          cd linux-${KERNEL_VERSION}
-          make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- modules_install INSTALL_MOD_PATH=../kernel-artifacts/modules_root
+      - name: Show ccache stats
+        run: ccache -s
 
-      - name: Package artifacts
+      - name: Package artifacts (vmlinuz + config only)
         run: |
           KERNEL_VERSION=${{ env.KERNEL_VERSION }}
-          mkdir -p artifacts
           cp linux-${KERNEL_VERSION}/arch/arm64/boot/Image.gz artifacts/vmlinuz-${KERNEL_VERSION}-droidvm
-          cp linux-${KERNEL_VERSION}/arch/arm64/boot/Image artifacts/vmlinux-${KERNEL_VERSION}-droidvm
           cp linux-${KERNEL_VERSION}/.config artifacts/config-${KERNEL_VERSION}-droidvm
-          grep -v '^#' linux-${KERNEL_VERSION}/.config | grep -v '^$' > artifacts/config-options-${KERNEL_VERSION}.txt
-          cd kernel-artifacts/modules_root
-          tar -czf ../../artifacts/modules-${KERNEL_VERSION}-droidvm.tar.gz lib/modules/${KERNEL_VERSION}
-          cd ../..
-          echo "Kernel version: ${KERNEL_VERSION}" > artifacts/README.txt
-          echo "Compiled for ARM64 (aarch64) with DroidVM optimizations." >> artifacts/README.txt
-          echo "Config file used: ${{ github.event.inputs.config_file }}" >> artifacts/README.txt
-          echo "To use in DroidVM:" >> artifacts/README.txt
-          echo "1. Copy vmlinuz-* to your kernel path" >> artifacts/README.txt
-          echo "2. Extract modules-*.tar.gz to /lib/modules/" >> artifacts/README.txt
-          echo "3. Generate initramfs if needed." >> artifacts/README.txt
 
       - name: Create Release and Upload Artifacts
         uses: softprops/action-gh-release@v1
@@ -130,10 +111,6 @@ jobs:
           generate_release_notes: false
           files: |
             artifacts/vmlinuz-${{ env.KERNEL_VERSION }}-droidvm
-            artifacts/vmlinux-${{ env.KERNEL_VERSION }}-droidvm
             artifacts/config-${{ env.KERNEL_VERSION }}-droidvm
-            artifacts/config-options-${{ env.KERNEL_VERSION }}.txt
-            artifacts/modules-${{ env.KERNEL_VERSION }}-droidvm.tar.gz
-            artifacts/README.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
