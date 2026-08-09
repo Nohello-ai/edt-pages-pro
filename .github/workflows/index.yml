@@ -1,0 +1,126 @@
+name: Build ARM64 Kernel for DroidVM with Custom Config
+
+on:
+  workflow_dispatch:
+    inputs:
+      kernel_version:
+        description: 'Linux kernel version (e.g., 6.6.89)'
+        required: true
+        default: '6.6.89'
+      release_title:
+        description: 'Release title (optional)'
+        required: false
+        default: ''
+      config_file:
+        description: 'Path to config options file in the repo (e.g., kernel-config.txt)'
+        required: false
+        default: 'kernel-config.txt'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository (to access config file)
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y git bc bison flex libssl-dev make \
+            gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu \
+            crossbuild-essential-arm64 libelf-dev dwarves
+
+      - name: Download kernel source
+        run: |
+          KERNEL_VERSION=${{ github.event.inputs.kernel_version }}
+          wget https://cdn.kernel.org/pub/linux/kernel/v${KERNEL_VERSION%%.*}.x/linux-${KERNEL_VERSION}.tar.xz
+          tar -xf linux-${KERNEL_VERSION}.tar.xz
+          echo "KERNEL_VERSION=${KERNEL_VERSION}" >> $GITHUB_ENV
+          echo "RELEASE_TAG=kernel-${KERNEL_VERSION}" >> $GITHUB_ENV
+
+      - name: Configure kernel using provided config file
+        run: |
+          cd linux-${KERNEL_VERSION}
+          # 生成基础配置
+          make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- defconfig
+
+          CONFIG_FILE="../${{ github.event.inputs.config_file }}"
+          if [ -f "$CONFIG_FILE" ]; then
+            echo "Applying custom config options from $CONFIG_FILE"
+            # 逐行读取配置，使用 scripts/config 设置
+            while IFS= read -r line; do
+              # 跳过空行和注释
+              [[ -z "$line" || "$line" =~ ^# ]] && continue
+              # 解析 CONFIG_XXX=value 格式
+              if [[ "$line" =~ ^CONFIG_([^=]+)=(.*)$ ]]; then
+                option="${BASH_REMATCH[1]}"
+                value="${BASH_REMATCH[2]}"
+                # 根据值类型决定操作
+                if [[ "$value" == "y" ]]; then
+                  scripts/config --enable "$option"
+                elif [[ "$value" == "m" ]]; then
+                  scripts/config --module "$option"
+                elif [[ "$value" == "n" ]]; then
+                  scripts/config --disable "$option"
+                else
+                  scripts/config --set-str "$option" "$value"
+                fi
+              fi
+            done < "$CONFIG_FILE"
+          else
+            echo "Warning: Config file $CONFIG_FILE not found. Using defconfig only."
+          fi
+
+          # 解决依赖并生成最终 .config
+          make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- olddefconfig
+
+      - name: Build kernel and modules
+        run: |
+          cd linux-${KERNEL_VERSION}
+          make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(nproc)
+          make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- modules
+          mkdir -p ../kernel-artifacts
+
+      - name: Install modules
+        run: |
+          cd linux-${KERNEL_VERSION}
+          make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- modules_install INSTALL_MOD_PATH=../kernel-artifacts/modules_root
+
+      - name: Package artifacts
+        run: |
+          KERNEL_VERSION=${{ env.KERNEL_VERSION }}
+          mkdir -p artifacts
+          cp linux-${KERNEL_VERSION}/arch/arm64/boot/Image.gz artifacts/vmlinuz-${KERNEL_VERSION}-droidvm
+          cp linux-${KERNEL_VERSION}/arch/arm64/boot/Image artifacts/vmlinux-${KERNEL_VERSION}-droidvm
+          cp linux-${KERNEL_VERSION}/.config artifacts/config-${KERNEL_VERSION}-droidvm
+          # 提取所有非注释的配置选项
+          grep -v '^#' linux-${KERNEL_VERSION}/.config | grep -v '^$' > artifacts/config-options-${KERNEL_VERSION}.txt
+          cd kernel-artifacts/modules_root
+          tar -czf ../../artifacts/modules-${KERNEL_VERSION}-droidvm.tar.gz lib/modules/${KERNEL_VERSION}
+          cd ../..
+          echo "Kernel version: ${KERNEL_VERSION}" > artifacts/README.txt
+          echo "Compiled for ARM64 (aarch64) with DroidVM optimizations." >> artifacts/README.txt
+          echo "Config file used: ${{ github.event.inputs.config_file }}" >> artifacts/README.txt
+          echo "To use in DroidVM:" >> artifacts/README.txt
+          echo "1. Copy vmlinuz-* to your kernel path" >> artifacts/README.txt
+          echo "2. Extract modules-*.tar.gz to /lib/modules/" >> artifacts/README.txt
+          echo "3. Generate initramfs if needed." >> artifacts/README.txt
+
+      - name: Create Release and Upload Artifacts
+        uses: softprops/action-gh-release@v1
+        with:
+          name: ${{ github.event.inputs.release_title || format('Kernel {0} for DroidVM', env.KERNEL_VERSION) }}
+          tag_name: ${{ env.RELEASE_TAG }}
+          generate_release_notes: false
+          files: |
+            artifacts/vmlinuz-${{ env.KERNEL_VERSION }}-droidvm
+            artifacts/vmlinux-${{ env.KERNEL_VERSION }}-droidvm
+            artifacts/config-${{ env.KERNEL_VERSION }}-droidvm
+            artifacts/config-options-${{ env.KERNEL_VERSION }}.txt
+            artifacts/modules-${{ env.KERNEL_VERSION }}-droidvm.tar.gz
+            artifacts/README.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
