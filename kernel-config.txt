@@ -1,105 +1,99 @@
 # ============================================================================
 # 高通 Gunyah Hypervisor 虚拟化支持
-# （DroidVM 基于 Gunyah 运行，这些选项是 Guest 与 Hypervisor 通信的基础）
 # ============================================================================
-CONFIG_GUNYAH=y                  # Gunyah 主驱动，检测并初始化 Hypervisor 接口
-CONFIG_GUNYAH_PLATFORM=y         # 平台初始化，处理 Gunyah 设备树节点
-CONFIG_GUNYAH_MESSAGING=y        # 消息队列，用于 Host 与 Guest 之间的数据传输
-CONFIG_GUNYAH_VCPU=y             # 虚拟 CPU 管理，让内核感知 vCPU 状态
-CONFIG_GUNYAH_MEM=y              # 内存共享与分配器，支持内存借用和零拷贝
+CONFIG_GUNYAH=y                  # Gunyah 主驱动
+CONFIG_GUNYAH_PLATFORM=y         # 平台初始化
+CONFIG_GUNYAH_MESSAGING=y        # 消息队列
+CONFIG_GUNYAH_VCPU=y             # 虚拟 CPU 管理
+CONFIG_GUNYAH_MEM=y              # 内存共享与分配
 CONFIG_GUNYAH_DRIVERS=y          # Gunyah 外设驱动总开关
-CONFIG_GUNYAH_IRQFD=y            # 中断转发加速，降低虚拟中断延迟
-CONFIG_GUNYAH_RM=y               # Resource Manager，动态管理内存资源
+CONFIG_GUNYAH_IRQFD=y            # 中断转发加速
+CONFIG_GUNYAH_RM=y               # Resource Manager
 
 # ============================================================================
 # Gunyah 下的 Virtio 传输层
-# （Gunyah 使用 MMIO 方式映射 virtio 设备，而非 PCI）
 # ============================================================================
-CONFIG_GUNYAH_VIRTIO_BE=y        # Gunyah 后端 virtio 传输接口（高通标准）
-CONFIG_VIRTIO_MMIO=y             # 使能 MMIO 方式的 virtio 设备（Gunyah 默认）
-CONFIG_VIRTIO_MMIO_CMDLINE_DEVICES=y  # 允许通过内核命令行指定 virtio 设备
+CONFIG_GUNYAH_VIRTIO_BE=y        # Gunyah 后端 virtio 传输
+CONFIG_VIRTIO_MMIO=y             # MMIO 方式 virtio 设备
+CONFIG_VIRTIO_MMIO_CMDLINE_DEVICES=y  # 命令行指定 virtio 设备
 
 # ============================================================================
 # 必需的 Virtio 设备驱动
-# （DroidVM 模拟的磁盘、网络、控制台均通过 virtio 提供）
 # ============================================================================
 CONFIG_VIRTIO=y                  # Virtio 框架总开关
-CONFIG_VIRTIO_BLK=y              # 块设备驱动（挂载 Alpine 根分区）
-CONFIG_VIRTIO_NET=y              # 网络设备驱动（虚拟机网卡）
-CONFIG_VIRTIO_CONSOLE=y          # 控制台设备驱动（串口输出）
+CONFIG_VIRTIO_BLK=y              # 块设备驱动
+CONFIG_VIRTIO_NET=y              # 网络设备驱动
+CONFIG_VIRTIO_CONSOLE=y          # 控制台设备驱动
 
 # ============================================================================
 # 共享文件夹支持（VirtIO-9P）
-# （如果 DroidVM 支持共享文件夹功能，则需要开启）
 # ============================================================================
 CONFIG_9P_FS=y                   # 9P 文件系统协议
 CONFIG_NET_9P=y                  # 9P 网络层
-CONFIG_NET_9P_VIRTIO=y           # 9P over VirtIO 传输
+CONFIG_NET_9P_VIRTIO=y           # 9P over VirtIO
 CONFIG_9P_FSCACHE=y              # 9P 缓存支持
 
 # ============================================================================
 # 内存管理与 DMA
 # ============================================================================
-CONFIG_DMA_SHARED_BUFFER=y       # DMA 共享缓冲区（配合 ION/DMABUF 使用）
-CONFIG_DMA_RESTRICT_POOL=y       # 受限 DMA 池（DroidVM 强制要求，不可关闭）
+CONFIG_DMA_SHARED_BUFFER=y       # DMA 共享缓冲区
+CONFIG_DMA_RESTRICT_POOL=y       # 受限 DMA 池（DroidVM 强制要求）
 
 # ============================================================================
-# 调度器与抢占（降低虚拟化延迟，提升响应速度）
+# 调度器与抢占
 # ============================================================================
-CONFIG_PREEMPT=y                 # 抢占式内核，减少任务响应时间
-CONFIG_HZ_1000=y                 # 时钟频率 1000Hz，提升交互性能
-CONFIG_HZ=1000                   # 同上，数值设定
-CONFIG_SCHED_MC=y                # 多核调度优化（多核负载均衡）
-CONFIG_SCHED_SMT=y               # 超线程调度优化（若有多线程）
-CONFIG_CPU_FREQ=y                # CPU 频率调节框架
-CONFIG_CPU_FREQ_GOV_SCHEDUTIL=y  # 基于调度器需求的调频策略（省电且高效）
+CONFIG_PREEMPT=y                 # 抢占式内核
+CONFIG_HZ_1000=y                 # 时钟频率 1000Hz
+CONFIG_HZ=1000
+CONFIG_SCHED_MC=y                # 多核调度优化
+CONFIG_SCHED_SMT=y               # 超线程调度优化
+CONFIG_CPU_FREQ=y                # CPU 频率调节
+CONFIG_CPU_FREQ_GOV_SCHEDUTIL=y  # 基于调度器的调频策略
 
 # ============================================================================
-# 文件系统（仅保留实际会用到的）
+# 文件系统
 # ============================================================================
 CONFIG_EXT4_FS=y                 # 标准 Linux 文件系统（必选）
 CONFIG_EXT4_FS_POSIX_ACL=y       # POSIX 访问控制列表
-CONFIG_BTRFS_FS=y                # Btrfs 文件系统（高级特性，可选保留）
-CONFIG_F2FS_FS=y                 # Flash Friendly 文件系统（手机闪存优化）
+CONFIG_BTRFS_FS=y                # Btrfs 文件系统
+CONFIG_F2FS_FS=y                 # Flash Friendly 文件系统
 
-# 以下是不需要的格式，关闭以精简内核
-CONFIG_FAT_FS=n                  # FAT/VFAT（不需要挂载 U 盘/Windows 分区）
-CONFIG_NTFS_FS=n                 # NTFS（不需要挂载 Windows 分区）
-CONFIG_SQUASHFS=n                # SquashFS 只读压缩文件系统（一般用不到）
+CONFIG_FAT_FS=n                  # FAT/VFAT
+CONFIG_NTFS_FS=n                 # NTFS
+CONFIG_SQUASHFS=n                # SquashFS
 
 # ============================================================================
-# 网络与代理
+# 网络与代理（全部编译进内核）
 # ============================================================================
 CONFIG_NETFILTER=y               # Netfilter 防火墙框架
 CONFIG_IP_NF_FILTER=y            # IPv4 包过滤
 CONFIG_IP_NF_NAT=y               # IPv4 网络地址转换
-CONFIG_TCP_CONG_BBR=y            # BBR 拥塞控制算法（高带宽高延迟网络优化）
-CONFIG_NET_SCH_FQ=y              # 公平队列调度（配合 BBR 使用）
-CONFIG_TUN=m                     # TUN/TAP 虚拟网卡（代理 TUN 模式用，编译为模块）
+CONFIG_TCP_CONG_BBR=y            # BBR 拥塞控制
+CONFIG_NET_SCH_FQ=y              # 公平队列调度
+CONFIG_TUN=y                     # TUN/TAP（编译进内核）
 
 # ============================================================================
-# 基础功能（系统运行必需）
+# 基础功能
 # ============================================================================
-CONFIG_DEVTMPFS=y                # 设备文件系统（/dev 自动挂载）
-CONFIG_DEVTMPFS_MOUNT=y          # 启动时自动挂载 devtmpfs
-CONFIG_BINFMT_ELF=y              # 支持 ELF 可执行文件（几乎所有程序）
-CONFIG_BINFMT_SCRIPT=y           # 支持脚本解释器（#!/bin/sh 等）
-CONFIG_SWAP=y                    # 交换分区支持
-CONFIG_ZSWAP=y                   # 压缩交换缓存（减少 swap I/O）
-CONFIG_ZSMALLOC=y                # zswap 依赖的内存分配器
+CONFIG_DEVTMPFS=y
+CONFIG_DEVTMPFS_MOUNT=y
+CONFIG_BINFMT_ELF=y
+CONFIG_BINFMT_SCRIPT=y
+CONFIG_SWAP=y
+CONFIG_ZSWAP=y
+CONFIG_ZSMALLOC=y
 
 # ============================================================================
 # 安全加固
 # ============================================================================
-CONFIG_RANDOMIZE_BASE=y          # KASLR：内核地址空间随机化
-CONFIG_STACKPROTECTOR=y          # 栈保护
-CONFIG_STACKPROTECTOR_STRONG=y   # 更强的栈保护
+CONFIG_RANDOMIZE_BASE=y
+CONFIG_STACKPROTECTOR=y
+CONFIG_STACKPROTECTOR_STRONG=y
 
 # ============================================================================
-# ===== 以下全部关闭（虚拟机中不需要） =====
+# ===== 以下全部关闭 =====
 # ============================================================================
 
-# 调试/追踪（代理运行不需要）
 CONFIG_DEBUG_FS=n                # 调试文件系统
 CONFIG_FTRACE=n                  # 内核追踪框架
 CONFIG_KPROBES=n                 # 动态探针
@@ -108,22 +102,19 @@ CONFIG_PERF_EVENTS=n             # perf 性能事件
 CONFIG_PROFILING=n               # 内核分析支持
 CONFIG_KALLSYMS=n                # 内核符号表
 
-# 容器相关（你确定不跑容器）
 CONFIG_CGROUPS=n                 # 控制组
 CONFIG_NAMESPACES=n              # 命名空间
 CONFIG_NET_NS=n                  # 网络命名空间
 CONFIG_PID_NS=n                  # PID 命名空间
 CONFIG_USER_NS=n                 # 用户命名空间
 
-# 电源管理（虚拟机不需要休眠）
 CONFIG_SUSPEND=n                 # 系统休眠
 CONFIG_HIBERNATION=n             # 系统挂起
 CONFIG_PM_SLEEP=n                # 电源管理睡眠
 
-# 输入设备（虚拟机不需要键盘鼠标驱动）
 CONFIG_INPUT=n                   # 输入子系统
 
-# 关闭所有物理网卡驱动（只保留 VirtIO-9P 和 VirtIO-Net）
+# 物理网卡驱动（全部关闭）
 CONFIG_NET_VENDOR_3COM=n
 CONFIG_NET_VENDOR_ADAPTEC=n
 CONFIG_NET_VENDOR_AGERE=n
@@ -177,7 +168,7 @@ CONFIG_NET_VENDOR_VIA=n
 CONFIG_NET_VENDOR_WANGXUN=n
 CONFIG_NET_VENDOR_XILINX=n
 
-# 物理网卡 PHY 驱动
+# PHY 驱动
 CONFIG_MARVELL_PHY=n
 CONFIG_BROADCOM_PHY=n
 CONFIG_REALTEK_PHY=n
@@ -185,18 +176,16 @@ CONFIG_MICREL_PHY=n
 CONFIG_AT803X_PHY=n
 
 # 多媒体/显示/音频
-CONFIG_MEDIA_SUPPORT=n           # 多媒体设备（摄像头、电视卡等）
-CONFIG_DRM=n                     # 显示驱动（GPU/显卡）
-CONFIG_SOUND=n                   # 音频驱动
+CONFIG_MEDIA_SUPPORT=n
+CONFIG_DRM=n
+CONFIG_SOUND=n
 
 # 其他物理硬件
-CONFIG_SERIAL_8250=n             # 传统串口（Gunyah 用 virtio-console）
-CONFIG_USB=n                     # USB 子系统
-CONFIG_MMC=n                     # SD/MMC 卡驱动
-CONFIG_ARCH_QCOM=n               # 高通物理平台驱动（虚拟机中不直接访问硬件）
-CONFIG_DEBUG_KERNEL=n            # 内核调试信息
+CONFIG_SERIAL_8250=n
+CONFIG_USB=n
+CONFIG_MMC=n
+CONFIG_ARCH_QCOM=n
+CONFIG_DEBUG_KERNEL=n
 
-# ============================================================================
 # 必须关闭（Gunyah Guest 中再开 KVM 会冲突）
-# ============================================================================
-CONFIG_KVM=n                     # KVM 虚拟化（Guest 中强制关闭）
+CONFIG_KVM=n
