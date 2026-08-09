@@ -25,6 +25,7 @@ jobs:
             gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu \
             crossbuild-essential-arm64 libelf-dev dwarves ccache
 
+      # ---------- 源码缓存 ----------
       - name: Cache kernel source
         uses: actions/cache@v4
         with:
@@ -33,6 +34,7 @@ jobs:
           restore-keys: |
             kernel-src-${{ github.event.inputs.kernel_version }}
 
+      # ---------- ccache 缓存（强制保存） ----------
       - name: Cache ccache
         uses: actions/cache@v4
         with:
@@ -40,7 +42,9 @@ jobs:
           key: ccache-droidvm
           restore-keys: |
             ccache-droidvm
+          save-always: true   # ← 强制保存，即使后续步骤失败
 
+      # ---------- 下载源码 ----------
       - name: Download kernel source (if not cached)
         run: |
           KERNEL_VERSION=${{ github.event.inputs.kernel_version }}
@@ -50,6 +54,7 @@ jobs:
           fi
           echo "KERNEL_VERSION=${KERNEL_VERSION}" >> $GITHUB_ENV
 
+      # ---------- 配置内核 ----------
       - name: Configure kernel
         run: |
           cd linux-${KERNEL_VERSION}
@@ -78,19 +83,28 @@ jobs:
             echo "Warning: kernel-config.txt not found. Using defconfig only."
           fi
 
+          # 验证关键配置是否生效
+          echo "=== Verifying key configs ==="
+          grep "CONFIG_GUNYAH" .config || echo "ERROR: CONFIG_GUNYAH not set"
+          grep "CONFIG_DMA_RESTRICT_POOL" .config || echo "ERROR: CONFIG_DMA_RESTRICT_POOL not set"
+
           make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- olddefconfig
 
+      # ---------- 编译内核 ----------
       - name: Build kernel with ccache
         run: |
           export PATH=/usr/lib/ccache:$PATH
           ccache -M 5G
+          ccache -z   # 清零统计
           cd linux-${KERNEL_VERSION}
           make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(nproc)
           mkdir -p ../artifacts
 
+      # ---------- ccache 统计 ----------
       - name: Show ccache stats
         run: ccache -s
 
+      # ---------- 打包产物 ----------
       - name: Package artifacts
         run: |
           KERNEL_VERSION=${{ env.KERNEL_VERSION }}
@@ -98,12 +112,14 @@ jobs:
           cp linux-${KERNEL_VERSION}/vmlinux artifacts/vmlinux-${KERNEL_VERSION}-droidvm.debug
           cp linux-${KERNEL_VERSION}/.config artifacts/config-${KERNEL_VERSION}-droidvm
 
+      # ---------- 上传产物到 Actions ----------
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: kernel-${{ env.KERNEL_VERSION }}
           path: artifacts/
 
+      # ---------- 版本号递增 ----------
       - name: Set release version
         id: version
         run: |
@@ -112,6 +128,7 @@ jobs:
           echo "RELEASE_VERSION=${MAJOR}.${MINOR}" >> $GITHUB_ENV
           echo "RELEASE_TAG=v${MAJOR}.${MINOR}" >> $GITHUB_ENV
 
+      # ---------- 创建 Release ----------
       - name: Create Release and Upload Artifacts
         uses: softprops/action-gh-release@v1
         with:
