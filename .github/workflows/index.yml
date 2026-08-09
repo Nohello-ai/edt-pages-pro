@@ -1,12 +1,12 @@
-name: Build ARM64 Kernel for DroidVM with Custom Config
+name: Build ARM64 Kernel for DroidVM
 
 on:
   workflow_dispatch:
     inputs:
       kernel_version:
-        description: 'Linux kernel version (e.g., 6.6.89)'
+        description: 'Linux kernel version (e.g., 6.12.8)'
         required: true
-        default: '6.6.89'
+        default: '6.12.8'
 
 jobs:
   build:
@@ -34,22 +34,22 @@ jobs:
           restore-keys: |
             kernel-src-${{ github.event.inputs.kernel_version }}
 
-      # ---------- ccache 缓存（强制保存） ----------
+      # ---------- ccache 缓存 ----------
       - name: Cache ccache
         uses: actions/cache@v4
         with:
           path: ~/.ccache
-          key: ccache-droidvm
+          key: ccache-droidvm-${{ github.event.inputs.kernel_version }}
           restore-keys: |
-            ccache-droidvm
-          save-always: true   # ← 强制保存，即使后续步骤失败
+            ccache-droidvm-
+          save-always: true
 
       # ---------- 下载源码 ----------
-      - name: Download kernel source (if not cached)
+      - name: Download kernel source
         run: |
           KERNEL_VERSION=${{ github.event.inputs.kernel_version }}
           if [ ! -d "linux-${KERNEL_VERSION}" ]; then
-            wget https://cdn.kernel.org/pub/linux/kernel/v${KERNEL_VERSION%%.*}.x/linux-${KERNEL_VERSION}.tar.xz
+            wget -q https://cdn.kernel.org/pub/linux/kernel/v${KERNEL_VERSION%%.*}.x/linux-${KERNEL_VERSION}.tar.xz
             tar -xf linux-${KERNEL_VERSION}.tar.xz
           fi
           echo "KERNEL_VERSION=${KERNEL_VERSION}" >> $GITHUB_ENV
@@ -60,81 +60,66 @@ jobs:
           cd linux-${KERNEL_VERSION}
           make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- defconfig
 
-          CONFIG_FILE="../kernel-config.txt"
-          if [ -f "$CONFIG_FILE" ]; then
-            echo "Applying custom config options from $CONFIG_FILE"
-            while IFS= read -r line; do
+          if [ -f "../kernel-config.txt" ]; then
+            echo "Applying kernel-config.txt"
+            while IFS= read -r line || [ -n "$line" ]; do
+              line=$(echo "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
               [[ -z "$line" || "$line" =~ ^# ]] && continue
               if [[ "$line" =~ ^CONFIG_([^=]+)=(.*)$ ]]; then
-                option="${BASH_REMATCH[1]}"
-                value="${BASH_REMATCH[2]}"
-                if [[ "$value" == "y" ]]; then
-                  scripts/config --enable "$option"
-                elif [[ "$value" == "m" ]]; then
-                  scripts/config --module "$option"
-                elif [[ "$value" == "n" ]]; then
-                  scripts/config --disable "$option"
-                else
-                  scripts/config --set-str "$option" "$value"
-                fi
+                opt="${BASH_REMATCH[1]}"
+                val="${BASH_REMATCH[2]}"
+                case "$val" in
+                  y) ./scripts/config --enable "$opt" ;;
+                  m) ./scripts/config --module "$opt" ;;
+                  n) ./scripts/config --disable "$opt" ;;
+                  *) ./scripts/config --set-str "$opt" "$val" ;;
+                esac
               fi
-            done < "$CONFIG_FILE"
-          else
-            echo "Warning: kernel-config.txt not found. Using defconfig only."
+            done < "../kernel-config.txt"
           fi
-
-          # 验证关键配置是否生效
-          echo "=== Verifying key configs ==="
-          grep "CONFIG_GUNYAH" .config || echo "ERROR: CONFIG_GUNYAH not set"
-          grep "CONFIG_DMA_RESTRICT_POOL" .config || echo "ERROR: CONFIG_DMA_RESTRICT_POOL not set"
 
           make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- olddefconfig
 
-      # ---------- 编译内核 ----------
-      - name: Build kernel with ccache
+          echo "=== Key config check ==="
+          grep "^CONFIG_GUNYAH=y" .config && echo "[OK] GUNYAH" || echo "[FAIL] GUNYAH"
+          grep "^CONFIG_VIRTIO_CONSOLE=y" .config && echo "[OK] VIRTIO_CONSOLE" || echo "[FAIL] VIRTIO_CONSOLE"
+          grep "^CONFIG_VIRTIO_BLK_MQ=y" .config && echo "[OK] VIRTIO_BLK_MQ" || echo "[FAIL] VIRTIO_BLK_MQ"
+          grep "^CONFIG_VIRTIO_NET_MQ=y" .config && echo "[OK] VIRTIO_NET_MQ" || echo "[FAIL] VIRTIO_NET_MQ"
+          grep "^CONFIG_TCP_CONG_BBR=y" .config && echo "[OK] BBR" || echo "[FAIL] BBR"
+
+      # ---------- 编译 ----------
+      - name: Build kernel
         run: |
           export PATH=/usr/lib/ccache:$PATH
           ccache -M 5G
-          ccache -z   # 清零统计
+          ccache -z
           cd linux-${KERNEL_VERSION}
           make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(nproc)
           mkdir -p ../artifacts
 
-      # ---------- ccache 统计 ----------
       - name: Show ccache stats
         run: ccache -s
 
-      # ---------- 打包产物 ----------
+      # ---------- 打包 ----------
       - name: Package artifacts
         run: |
-          KERNEL_VERSION=${{ env.KERNEL_VERSION }}
-          cp linux-${KERNEL_VERSION}/arch/arm64/boot/Image.gz artifacts/vmlinuz-${KERNEL_VERSION}-droidvm
-          cp linux-${KERNEL_VERSION}/vmlinux artifacts/vmlinux-${KERNEL_VERSION}-droidvm.debug
-          cp linux-${KERNEL_VERSION}/.config artifacts/config-${KERNEL_VERSION}-droidvm
+          V=${{ env.KERNEL_VERSION }}
+          cp linux-${V}/arch/arm64/boot/Image.gz artifacts/vmlinuz-${V}-droidvm
+          cp linux-${V}/vmlinux artifacts/vmlinux-${V}-droidvm.debug
+          cp linux-${V}/.config artifacts/config-${V}-droidvm
 
-      # ---------- 上传产物到 Actions ----------
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: kernel-${{ env.KERNEL_VERSION }}
           path: artifacts/
 
-      # ---------- 版本号递增 ----------
-      - name: Set release version
-        id: version
-        run: |
-          MAJOR=1
-          MINOR=${{ github.run_number }}
-          echo "RELEASE_VERSION=${MAJOR}.${MINOR}" >> $GITHUB_ENV
-          echo "RELEASE_TAG=v${MAJOR}.${MINOR}" >> $GITHUB_ENV
-
-      # ---------- 创建 Release ----------
-      - name: Create Release and Upload Artifacts
+      # ---------- Release ----------
+      - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          name: Kernel ${{ env.KERNEL_VERSION }} (Build ${{ env.RELEASE_VERSION }})
-          tag_name: ${{ env.RELEASE_TAG }}
-          generate_release_notes: false
+          name: Kernel ${{ env.KERNEL_VERSION }} (Build ${{ github.run_number }})
+          tag_name: v1.${{ github.run_number }}
           files: |
             artifacts/vmlinuz-${{ env.KERNEL_VERSION }}-droidvm
             artifacts/vmlinux-${{ env.KERNEL_VERSION }}-droidvm.debug
