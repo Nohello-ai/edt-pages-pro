@@ -1,30 +1,107 @@
-# DroidVM 内核配置选项
-# 格式：CONFIG_OPTION=value
-# value可以是 y, m, n 或字符串值
+# ============================================================================
+# 高通 Gunyah Hypervisor 虚拟化支持
+# ============================================================================
+CONFIG_GUNYAH=y                  # Gunyah 主驱动
+CONFIG_GUNYAH_PLATFORM=y         # 平台初始化
+CONFIG_GUNYAH_MESSAGING=y        # 消息队列
+CONFIG_GUNYAH_VCPU=y             # 虚拟 CPU 管理
+CONFIG_GUNYAH_MEM=y              # 内存共享与分配
+CONFIG_GUNYAH_DRIVERS=y          # Gunyah 外设驱动总开关
+CONFIG_GUNYAH_IRQFD=y            # 中断转发加速
+CONFIG_GUNYAH_RM=y               # Resource Manager
 
-CONFIG_DMA_RESTRICT_POOL=y
-CONFIG_SCHED_MC=y
-CONFIG_SCHED_SMT=y
-CONFIG_HZ_1000=y
-CONFIG_CPU_FREQ_GOV_SCHEDUTIL=y
-CONFIG_TCP_CONG_BBR=y
-CONFIG_NET_SCH_FQ=y
-CONFIG_TUN=m
-CONFIG_NETFILTER=y
-CONFIG_NF_TABLES=y
-CONFIG_IP_NF_TARGET_REDIRECT=y
-CONFIG_IP_NF_TARGET_TPROXY=y
-CONFIG_EXT4_FS=y
-CONFIG_EXT4_FS_POSIX_ACL=y
-CONFIG_BTRFS_FS=y
-CONFIG_F2FS_FS=y
-CONFIG_VIRTIO_BLK=y
-CONFIG_VIRTIO_NET=y
-CONFIG_VIRTIO=y
-CONFIG_VIRTIO_PCI=y
-CONFIG_VIRTIO_CONSOLE=y
+# ============================================================================
+# Gunyah 下的 Virtio 传输层
+# ============================================================================
+CONFIG_GUNYAH_VIRTIO_BE=y        # Gunyah 后端 virtio 传输
+CONFIG_VIRTIO_MMIO=y             # MMIO 方式 virtio 设备
+CONFIG_VIRTIO_MMIO_CMDLINE_DEVICES=y  # 命令行指定 virtio 设备
 
-# 关闭不需要的选项（设置为 n）
+# ============================================================================
+# 必需的 Virtio 设备驱动
+# ============================================================================
+CONFIG_VIRTIO=y                  # Virtio 框架总开关
+CONFIG_VIRTIO_BLK=y              # 块设备驱动（挂载根分区）
+CONFIG_VIRTIO_NET=y              # 网络设备驱动
+CONFIG_VIRTIO_CONSOLE=y          # 控制台设备驱动
+
+# ============================================================================
+# 内存管理与 DMA
+# ============================================================================
+CONFIG_DMA_SHARED_BUFFER=y       # DMA 共享缓冲区
+CONFIG_DMA_RESTRICT_POOL=y       # 受限 DMA 池（DroidVM 强制要求）
+
+# ============================================================================
+# 调度器与抢占
+# ============================================================================
+CONFIG_PREEMPT=y                 # 抢占式内核
+CONFIG_HZ_1000=y                 # 时钟频率 1000Hz
+CONFIG_HZ=1000
+CONFIG_SCHED_MC=y                # 多核调度优化
+CONFIG_SCHED_SMT=y               # 超线程调度优化
+CONFIG_CPU_FREQ=y                # CPU 频率调节
+CONFIG_CPU_FREQ_GOV_SCHEDUTIL=y  # 基于调度器的调频策略
+
+# ============================================================================
+# 文件系统（仅保留实际会用到的）
+# ============================================================================
+CONFIG_EXT4_FS=y                 # 标准 Linux 文件系统（必选）
+CONFIG_EXT4_FS_POSIX_ACL=y       # POSIX 访问控制列表
+CONFIG_BTRFS_FS=y                # Btrfs 文件系统（可选，可保留）
+CONFIG_F2FS_FS=y                 # F2FS 文件系统（手机闪存优化）
+# 以下容器相关文件系统全部移除
+# CONFIG_OVERLAY_FS=n            # OverlayFS（不需要）
+# CONFIG_FUSE_FS=n               # FUSE（不需要）
+
+# ============================================================================
+# 网络与代理
+# ============================================================================
+CONFIG_NETFILTER=y               # Netfilter 防火墙框架
+CONFIG_IP_NF_FILTER=y            # IPv4 包过滤
+CONFIG_IP_NF_NAT=y               # IPv4 网络地址转换
+CONFIG_TCP_CONG_BBR=y            # BBR 拥塞控制算法
+CONFIG_NET_SCH_FQ=y              # 公平队列调度
+CONFIG_TUN=m                     # TUN/TAP 虚拟网卡（VPN 用）
+
+# ============================================================================
+# 其他必备功能
+# ============================================================================
+CONFIG_DEVTMPFS=y                # 设备文件系统
+CONFIG_DEVTMPFS_MOUNT=y          # 启动时自动挂载 devtmpfs
+CONFIG_BINFMT_ELF=y              # ELF 可执行文件支持
+CONFIG_BINFMT_SCRIPT=y           # 脚本解释器支持
+CONFIG_SWAP=y                    # 交换分区支持
+CONFIG_ZSWAP=y                   # 压缩交换缓存
+CONFIG_ZSMALLOC=y                # zswap 内存分配器
+
+# ============================================================================
+# 安全加固
+# ============================================================================
+CONFIG_RANDOMIZE_BASE=y          # KASLR 地址随机化
+CONFIG_STACKPROTECTOR=y          # 栈保护
+CONFIG_STACKPROTECTOR_STRONG=y   # 强栈保护
+
+# ============================================================================
+# 调试与性能分析
+# ============================================================================
+CONFIG_PERF_EVENTS=y             # perf 性能事件
+CONFIG_PROFILING=y               # 内核分析支持
+CONFIG_KALLSYMS=y                # 内核符号表
+
+# ============================================================================
+# 必须关闭
+# ============================================================================
+CONFIG_KVM=n                     # Guest 中不开 KVM
+
+# ============================================================================
+# 关闭物理硬件驱动
+# ============================================================================
 CONFIG_SOUND=n
 CONFIG_DRM=n
+CONFIG_MEDIA_SUPPORT=n
+CONFIG_INPUT=n
+CONFIG_ARCH_QCOM=n
 CONFIG_DEBUG_KERNEL=n
+CONFIG_SERIAL_8250=n
+CONFIG_USB=n
+CONFIG_MMC=n
