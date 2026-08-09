@@ -68,12 +68,19 @@ jobs:
               if [[ "$line" =~ ^CONFIG_([^=]+)=(.*)$ ]]; then
                 opt="${BASH_REMATCH[1]}"
                 val="${BASH_REMATCH[2]}"
-                case "$val" in
-                  y) ./scripts/config --enable "$opt" ;;
-                  m) ./scripts/config --module "$opt" ;;
-                  n) ./scripts/config --disable "$opt" ;;
-                  *) ./scripts/config --set-str "$opt" "$val" ;;
-                esac
+                if [[ "$val" == "y" ]]; then
+                  ./scripts/config --enable "$opt"
+                elif [[ "$val" == "m" ]]; then
+                  ./scripts/config --module "$opt"
+                elif [[ "$val" == "n" ]]; then
+                  ./scripts/config --disable "$opt"
+                elif [[ "$val" =~ ^\".*\"$ ]]; then
+                  ./scripts/config --set-str "$opt" "$(echo "$val" | sed 's/^"//;s/"$//')"
+                elif [[ "$val" =~ ^[0-9]+$ ]]; then
+                  ./scripts/config --set-val "$opt" "$val"
+                else
+                  ./scripts/config --set-str "$opt" "$val"
+                fi
               fi
             done < "../kernel-config.txt"
           fi
@@ -81,13 +88,13 @@ jobs:
           make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- olddefconfig
 
           echo "=== Key config check ==="
-          grep "^CONFIG_GUNYAH=y" .config && echo "[OK] GUNYAH" || echo "[FAIL] GUNYAH"
           grep "^CONFIG_VIRTIO_CONSOLE=y" .config && echo "[OK] VIRTIO_CONSOLE" || echo "[FAIL] VIRTIO_CONSOLE"
-          grep "^CONFIG_VIRTIO_BLK_MQ=y" .config && echo "[OK] VIRTIO_BLK_MQ" || echo "[FAIL] VIRTIO_BLK_MQ"
           grep "^CONFIG_VIRTIO_NET_MQ=y" .config && echo "[OK] VIRTIO_NET_MQ" || echo "[FAIL] VIRTIO_NET_MQ"
+          grep "^CONFIG_IO_URING=y" .config && echo "[OK] IO_URING" || echo "[FAIL] IO_URING"
           grep "^CONFIG_TCP_CONG_BBR=y" .config && echo "[OK] BBR" || echo "[FAIL] BBR"
+          grep '^CONFIG_DEFAULT_TCP_CONG="bbr"' .config && echo "[OK] DEFAULT_BBR" || echo "[FAIL] DEFAULT_BBR"
 
-      # ---------- 编译 ----------
+      # ---------- 编译内核 ----------
       - name: Build kernel
         run: |
           export PATH=/usr/lib/ccache:$PATH
