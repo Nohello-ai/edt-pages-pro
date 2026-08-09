@@ -103,6 +103,12 @@ jobs:
           cp linux-${KERNEL_VERSION}/arch/arm64/boot/Image.gz artifacts/vmlinuz-${KERNEL_VERSION}-droidvm
           cp linux-${KERNEL_VERSION}/.config artifacts/config-${KERNEL_VERSION}-droidvm
 
+      - name: Upload artifacts (vmlinuz + config)
+        uses: actions/upload-artifact@v4
+        with:
+          name: kernel-${{ env.KERNEL_VERSION }}
+          path: artifacts/
+
       - name: Create Release and Upload Artifacts
         uses: softprops/action-gh-release@v1
         with:
